@@ -2,6 +2,7 @@
 const express = require('express')
 
 const moment = require('moment')
+const CryptoJS = require('crypto-js');
 
 const data_router = express.Router();
 const Data = require('../Models/data');
@@ -22,12 +23,21 @@ function auth(v1, v2) {
   return resultado
 }
 
+function decrypt(val) { 
+  var decryptedBytes = CryptoJS.AES.decrypt(val, "test");
+  var decryptedMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);
+  return decryptedMessage;
+}
+
+console.log(decrypt('U2FsdGVkX1+k3F02qs797jdpchsd07rIs+46wfcqJms='))
+
 //get base64
 data_router.post('/auth', async (req, res) => {
   Data.findOne({ email: req.body.email }, (error, docs) => {
     let p1 = req.body.password
     let p2 = docs.password
-    let resultado = auth(p1, p2)
+    let newVal = decrypt(p1)
+    let resultado = auth(p2, newVal)
     if (resultado) res.send(docs)
     else res.send("Credenciales Invalidas")
   })
